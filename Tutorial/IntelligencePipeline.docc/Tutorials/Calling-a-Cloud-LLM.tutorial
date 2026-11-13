@@ -1,0 +1,133 @@
+@Tutorial(time: 25, projectFiles: IntelligencePipeline.zip) {
+    @Intro(title: "Calling a Cloud LLM") {
+        Send the question to a large model over HTTPS. Support three providers, keep API keys out of the code, and fall back to a labelled Demo mode when there's no key, so the demo still runs without a network.
+
+        @Image(source: "ip-diagram-providers.png", alt: "OpenAI, Gemini and Anthropic request and reply formats.")
+    }
+
+    @Section(title: "Choose a Provider and Store the Key") {
+        @ContentAndMedia {
+            An API key in source code ends up on GitHub sooner or later. Store it in the Keychain, entered by the user at run time; the provider and model are ordinary preferences.
+
+            @Image(source: "ip-diagram-keys.png", alt: "The key goes from the Settings sheet into the Keychain, and is read from there for each call.")
+        }
+
+        @Steps {
+            @Step {
+                Create `LLMSettings.swift` with `LLMProvider`: a title, a sensible inexpensive default model, and where to get a key. Model names change over time, which is why the default can be overridden.
+
+                @Code(name: "LLMSettings.swift", file: ip-04-settings-01.swift)
+            }
+
+            @Step {
+                Add `LLMSettings` for the provider and model, kept in `UserDefaults`.
+
+                @Code(name: "LLMSettings.swift", file: ip-04-settings-02.swift)
+            }
+
+            @Step {
+                Add the API key, stored with a tiny Keychain wrapper: one generic password per provider. An empty key deletes it. `isConfigured` tells the rest of the app whether calls will be real.
+
+                @Code(name: "LLMSettings.swift", file: ip-04-settings-03.swift)
+            }
+        }
+    }
+
+    @Section(title: "Send the Request") {
+        @ContentAndMedia {
+            Every provider wants the same thing, a prompt in and text out, but in a different shape: a different endpoint, auth header, body and reply path. That's the integration cost on-device models remove.
+
+            @Image(source: "ip-diagram-providers.png", alt: "OpenAI, Gemini and Anthropic request and reply formats.")
+        }
+
+        @Steps {
+            @Step {
+                Create `CloudLLMService.swift` with Demo mode first: no key means a short pause and a canned answer, clearly marked **[Demo mode]**.
+
+                @Code(name: "CloudLLMService.swift", file: ip-04-cloud-01.swift)
+            }
+
+            @Step {
+                Add the real call. `makeRequest` builds each provider's request, `extractText` digs the reply out of each JSON shape, and `serverMessage` turns an error reply into a readable message. HTTP 401, 404 and 429 get specific hints, and every call logs a `[CloudLLM]` line to the console.
+
+                @Code(name: "CloudLLMService.swift", file: ip-04-cloud-02.swift)
+            }
+        }
+    }
+
+    @Section(title: "Let Users Add a Key") {
+        @ContentAndMedia {
+            A small form: pick a provider, optionally change the model, paste a key.
+
+            @Image(source: "ip-preview-settings.png", alt: "The Settings sheet with a provider picker, model and API key fields.")
+        }
+
+        @Steps {
+            @Step {
+                Create `SettingsView.swift`. The key uses a `SecureField`, and the footer says whether the pipeline is live or in Demo mode. Switching provider loads that provider's saved model and key.
+
+                @Code(name: "SettingsView.swift", file: ip-04-settingsview.swift) {
+                    @Image(source: "ip-preview-settings.png", alt: "The Settings sheet with a provider picker, model and API key fields.")
+                }
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Where is the API key stored?
+
+            @Choice(isCorrect: false) {
+                In a constant in `CloudLLMService.swift`.
+
+                @Justification(reaction: "Try again!") {
+                    Keys in source code leak when the code is shared.
+                }
+            }
+
+            @Choice(isCorrect: true) {
+                In the device's Keychain, entered in the Settings sheet.
+
+                @Justification(reaction: "That's right!") {
+                    The repository never contains a key.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                In `UserDefaults`, next to the model name.
+
+                @Justification(reaction: "Not quite.") {
+                    `UserDefaults` isn't encrypted; only the provider and model live there.
+                }
+            }
+        }
+
+        @MultipleChoice {
+            The Cloud LLM stage shows "HTTP 404". What's the most likely fix?
+
+            @Choice(isCorrect: true) {
+                Update the model name in Settings: it's wrong or has been retired.
+
+                @Justification(reaction: "Correct!") {
+                    A rejected key would be 401 or 403; no credit would be 429.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Turn on Dictation.
+
+                @Justification(reaction: "Try again!") {
+                    Dictation affects speech recognition, not the cloud call.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Grant microphone access.
+
+                @Justification(reaction: "Not quite.") {
+                    The request reached the server; it didn't recognise the model.
+                }
+            }
+        }
+    }
+}

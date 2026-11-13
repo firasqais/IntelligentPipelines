@@ -1,0 +1,105 @@
+@Tutorial(time: 20, projectFiles: IntelligencePipeline.zip) {
+    @Intro(title: "Capturing Audio") {
+        Every voice feature starts with an audio file. Describe the pipeline's four stages, then create audio two ways: by speaking a sample question with text-to-speech, and by recording the microphone.
+
+        @Image(source: "ip-diagram-pipeline.png", alt: "Audio, speech, intent and LLM stages, on the device and in the cloud.")
+    }
+
+    @Section(title: "Describe the Stages") {
+        @ContentAndMedia {
+            Create a new iOS App project named **IntelligencePipeline** with SwiftUI and iOS 26 as the deployment target. In the target's **Info** tab, add **Privacy - Microphone Usage Description** and **Privacy - Speech Recognition Usage Description**; iOS shows these when it asks for permission, and the app crashes without them.
+
+            @Image(source: "ip-diagram-pipeline.png", alt: "Audio, speech, intent and LLM stages.")
+        }
+
+        @Steps {
+            @Step {
+                Create `PipelineStage.swift` with `PipelineStep`: the four stages in order, each with a title and an SF Symbol.
+
+                @Code(name: "PipelineStage.swift", file: ip-01-stage-01.swift)
+            }
+
+            @Step {
+                Add `StageStatus`. A stage is waiting, running, done with an output, or failed with a message. The screen will show each stage's status live, which is the point of this demo: you *see* the hand-off between frameworks.
+
+                @Code(name: "PipelineStage.swift", file: ip-01-stage-02.swift)
+            }
+        }
+    }
+
+    @Section(title: "Speak the Sample") {
+        @ContentAndMedia {
+            A live demo shouldn't depend on a bundled recording or a quiet room. The app generates its sample question itself: `AVSpeechSynthesizer` can write speech to buffers instead of the speaker.
+
+            @Image(source: "ip-diagram-audio.png", alt: "Sample, Record and Type inputs.")
+        }
+
+        @Steps {
+            @Step {
+                Create `SampleAudioService.swift`. The file name includes a hash of the text, so changing `sampleText` produces a fresh file, and an existing file is reused.
+
+                @Code(name: "SampleAudioService.swift", file: ip-01-sample-01.swift)
+            }
+
+            @Step {
+                Add `synthesize(_:to:)`. `synthesizer.write(_:)` calls back with audio buffers; the first one creates an `AVAudioFile` in the same format, each buffer is appended, and an empty buffer means the speech has finished. A checked continuation turns the callbacks into one `await`.
+
+                @Code(name: "SampleAudioService.swift", file: ip-01-sample-02.swift)
+            }
+        }
+    }
+
+    @Section(title: "Record the Microphone") {
+        @ContentAndMedia {
+            `AVAudioEngine` records in the microphone's own format, which is the most reliable choice: no compression step that could fail, and the file feeds straight into speech recognition.
+
+            @Image(source: "ip-preview-recording.png", alt: "Recording, with a red level bar and a seconds counter.")
+        }
+
+        @Steps {
+            @Step {
+                Create `AudioRecorderService.swift`. `start()` sets the audio session to `.record`, installs a tap on the input node and writes every buffer to a file. `stop()` removes the tap and closes the file so it can be read. If the input format has no channels, there's no microphone, so it says so instead of recording silence.
+
+                @Code(name: "AudioRecorderService.swift", file: ip-01-recorder-01.swift)
+            }
+
+            @Step {
+                Add a live level. Each buffer's root-mean-square loudness is mapped to 0…1 and passed to `onLevel`. The screen will show it as a moving bar: if it doesn't move when you speak, you know the problem is the microphone, not speech recognition.
+
+                @Code(name: "AudioRecorderService.swift", file: ip-01-recorder-02.swift) {
+                    @Image(source: "ip-preview-recording.png", alt: "Recording, with a red level bar and a seconds counter.")
+                }
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Why does the app generate its sample question with text-to-speech?
+
+            @Choice(isCorrect: true) {
+                So the demo works anywhere, with no recording to bundle and no microphone needed.
+
+                @Justification(reaction: "That's right!") {
+                    The sample is created on the device the first time it's needed.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Speech recognition only accepts synthesized audio.
+
+                @Justification(reaction: "Try again!") {
+                    It accepts recordings too; that's the Record input.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Text-to-speech is faster than reading a file.
+
+                @Justification(reaction: "Not quite.") {
+                    It writes a file, which the next stage then reads.
+                }
+            }
+        }
+    }
+}

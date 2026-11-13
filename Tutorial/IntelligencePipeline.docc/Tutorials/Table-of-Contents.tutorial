@@ -1,0 +1,33 @@
+@Tutorials(name: "IntelligencePipeline") {
+    @Intro(title: "Build a Voice AI Pipeline the Classic Way") {
+        Before on-device language models, a voice feature meant chaining separate frameworks: record audio, turn it into text, guess the intent, then send the question to a cloud model. Build that pipeline stage by stage, and see exactly what Apple Intelligence makes simpler.
+
+        @Image(source: "ip-hero.png", alt: "The pipeline recording a question and showing its four completed stages.")
+    }
+
+    @Chapter(name: "Audio In") {
+        Get a question into the app as audio, then into text, entirely on the device.
+
+        @Image(source: "ip-diagram-audio.png", alt: "Sample, Record and Type inputs.")
+
+        @TutorialReference(tutorial: "doc:Capturing-Audio")
+        @TutorialReference(tutorial: "doc:Speech-to-Text")
+    }
+
+    @Chapter(name: "Deciding and Answering") {
+        Decide on the device whether a request needs a large model, and if it does, call one in the cloud.
+
+        @Image(source: "ip-diagram-router.png", alt: "The intent router's three rules.")
+
+        @TutorialReference(tutorial: "doc:Routing-on-the-Device")
+        @TutorialReference(tutorial: "doc:Calling-a-Cloud-LLM")
+    }
+
+    @Chapter(name: "Wiring the Pipeline") {
+        Run the four stages in order, show each one live, and compare the result with Foundation Models.
+
+        @Image(source: "ip-diagram-pipeline.png", alt: "Audio, speech, intent and LLM stages, on the device and in the cloud.")
+
+        @TutorialReference(tutorial: "doc:Running-the-Pipeline")
+    }
+}

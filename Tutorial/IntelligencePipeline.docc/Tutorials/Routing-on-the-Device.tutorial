@@ -1,0 +1,89 @@
+@Tutorial(time: 10, projectFiles: IntelligencePipeline.zip) {
+    @Intro(title: "Routing on the Device") {
+        Not every request needs a large model. A small on-device router decides: commands like "turn on the lights" are handled locally, and only questions it can't handle go to the cloud. That saves cost and time, and keeps more of the user's words on the device.
+
+        @Image(source: "ip-diagram-router.png", alt: "The intent router's three rules.")
+    }
+
+    @Section(title: "Classify the Intent") {
+        @ContentAndMedia {
+            The router returns a label and a confidence. The rule for going to the cloud lives with the result, so it's easy to find and change.
+
+            @Image(source: "ip-diagram-router.png", alt: "Questions go to the cloud, commands stay on the device, other statements depend on confidence.")
+        }
+
+        @Steps {
+            @Step {
+                Create `IntentResult.swift`. `requiresCloud` is true for questions, and for anything the router is less than 75% sure about.
+
+                @Code(name: "IntentResult.swift", file: ip-03-intent.swift)
+            }
+
+            @Step {
+                Create `IntentClassifierService.swift`. Keywords catch questions and commands; anything else falls back to NaturalLanguage's sentiment score, which turns into a statement with a lower confidence. The TODO shows how a Create ML text classifier would replace the keywords.
+
+                @Code(name: "IntentClassifierService.swift", file: ip-03-classifier.swift) {
+                    @Image(source: "ip-preview-command.png", alt: "A typed command handled on the device, with the cloud stage skipped.")
+                }
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            The user says "Turn on the living room lights". What happens at the Cloud LLM stage?
+
+            @Choice(isCorrect: true) {
+                It's skipped: the router labels it a command with 88% confidence.
+
+                @Justification(reaction: "That's right!") {
+                    Commands above 75% are handled on the device.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                The cloud model is asked what the user meant.
+
+                @Justification(reaction: "Try again!") {
+                    Only questions and low-confidence results go to the cloud.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                The pipeline fails because it isn't a question.
+
+                @Justification(reaction: "Not quite.") {
+                    It completes with an on-device result.
+                }
+            }
+        }
+
+        @MultipleChoice {
+            What's the main weakness of this keyword router?
+
+            @Choice(isCorrect: true) {
+                It only understands phrasings someone anticipated, such as questions that start with "what".
+
+                @Justification(reaction: "Correct!") {
+                    "Is it going to rain tomorrow" has no question word at the start. An on-device language model understands it.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                It sends everything to the cloud.
+
+                @Justification(reaction: "Try again!") {
+                    Commands are kept on the device.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                It needs a network connection.
+
+                @Justification(reaction: "Not quite.") {
+                    NaturalLanguage runs on the device.
+                }
+            }
+        }
+    }
+}

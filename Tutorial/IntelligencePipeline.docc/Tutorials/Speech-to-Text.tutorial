@@ -1,0 +1,85 @@
+@Tutorial(time: 25, projectFiles: IntelligencePipeline.zip) {
+    @Intro(title: "Speech to Text") {
+        Turn the audio file into text with Apple's Speech framework. Start with the long-standing `SFSpeechRecognizer`, then add iOS 26's `SpeechAnalyzer`, which runs fully on the device with its own downloadable model, and keep a fallback for devices that can't run it.
+
+        @Image(source: "ip-diagram-speech.png", alt: "SpeechTranscriber, then DictationTranscriber, then SFSpeechRecognizer.")
+    }
+
+    @Section(title: "Start with SFSpeechRecognizer") {
+        @ContentAndMedia {
+            `SFSpeechRecognizer` has been around since iOS 10. It relies on the device's Dictation service, so it needs Dictation turned on, and on a simulator it often can't start at all.
+
+            @Image(source: "ip-diagram-speech.png", alt: "Three speech engines in order.")
+        }
+
+        @Steps {
+            @Step {
+                Create `SpeechTranscriberService.swift`. `requestPermission()` asks for speech recognition access. `transcribe(audioURL:)` tries Australian, US and British English in turn and collects every failure, so the final error lists what went wrong for each. `lastEngine` records which engine succeeded.
+
+                @Code(name: "SpeechTranscriberService.swift", file: ip-02-speech-01.swift)
+            }
+        }
+    }
+
+    @Section(title: "Add SpeechAnalyzer") {
+        @ContentAndMedia {
+            `SpeechAnalyzer` (iOS 26) runs modules such as `SpeechTranscriber` on the device. It needs four things done in order, and skipping one gives errors like "Cannot use modules with unallocated locales".
+
+            @Image(source: "ip-diagram-analyzer.png", alt: "Pick a locale, reserve it, install the model, stream the audio.")
+        }
+
+        @Steps {
+            @Step {
+                Add the SpeechAnalyzer path and try it first. `pickEnglish` chooses from the locales the module supports. `prepare` **reserves** the locale and downloads its model if needed. `analyze` streams the audio through an `AsyncStream<AnalyzerInput>`, converted by `feedAudio` to the analyzer's best format one second at a time, while a separate task collects the final results.
+
+                @Code(name: "SpeechTranscriberService.swift", file: ip-02-speech-02.swift)
+            }
+        }
+    }
+
+    @Section(title: "Fall Back to Dictation") {
+        @ContentAndMedia {
+            `SpeechTranscriber` isn't available on every iPhone. `DictationTranscriber` is a second SpeechAnalyzer module that works on more devices, and because it uses the same `prepare` and `analyze` helpers, adding it is short.
+
+            @Image(source: "ip-diagram-speech.png", alt: "Three speech engines in order.")
+        }
+
+        @Steps {
+            @Step {
+                Add `transcribeWithDictationTranscriber` and try it between the other two. The chain is now newest model, then wider compatibility, then the older API.
+
+                @Code(name: "SpeechTranscriberService.swift", file: ip-02-speech-03.swift)
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            What must happen before a `SpeechAnalyzer` module can transcribe?
+
+            @Choice(isCorrect: true) {
+                Its locale must be reserved and its model installed.
+
+                @Justification(reaction: "That's right!") {
+                    `AssetInventory.reserve(locale:)`, then the installation request if one is returned.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Dictation must be turned on in Settings.
+
+                @Justification(reaction: "Try again!") {
+                    That's a requirement of the older `SFSpeechRecognizer`.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                The device must be online for every request.
+
+                @Justification(reaction: "Not quite.") {
+                    Only the first model download needs a connection.
+                }
+            }
+        }
+    }
+}

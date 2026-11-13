@@ -87,6 +87,32 @@ Model names change over time; if the cloud stage reports *model not found*, type
 
 ---
 
+## Step-by-step tutorial
+
+The `Tutorial` folder builds this app from an empty project: **5 tutorials, 24 steps**, with code that updates as you
+scroll, app previews, diagrams, quizzes and a project download, in the style of Apple's SwiftUI tutorials.
+
+| How | Use it |
+|---|---|
+| `Tutorial/IntelligencePipeline Tutorial.html` | Double-click to open in any browser. Works offline and prints to PDF |
+| `Tutorial/Preview Tutorial.command` | Double-click to serve the DocC tutorial from your Mac |
+| `Tutorial/Export Tutorial.command` | Double-click to make a `.doccarchive` that opens in Xcode |
+| `Tutorial/IntelligencePipeline.docc` | The DocC source |
+
+| Chapter | Tutorial | Builds |
+|---|---|---|
+| Audio In | Capturing Audio | `PipelineStage`, `SampleAudioService`, `AudioRecorderService` |
+| Audio In | Speech to Text | `SpeechTranscriberService`: `SFSpeechRecognizer`, then `SpeechAnalyzer`, then the Dictation fallback |
+| Deciding and Answering | Routing on the Device | `IntentResult`, `IntentClassifierService` |
+| Deciding and Answering | Calling a Cloud LLM | `LLMSettings` with the Keychain, `CloudLLMService`, `SettingsView` |
+| Wiring the Pipeline | Running the Pipeline | `PipelineViewModel`, `PipelineStageView`, `ContentView`, and how Foundation Models compares |
+
+Every file the tutorial builds matches this repository exactly.
+The app screens in the tutorial are drawn mockups with example answers; to use real screenshots, save them over the
+`ip-preview-*.png` files in `Tutorial/IntelligencePipeline.docc/Resources/Images` and regenerate the HTML.
+
+---
+
 ## Project structure
 
 | File | What it does |

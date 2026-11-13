@@ -1,0 +1,147 @@
+@Tutorial(time: 25, projectFiles: IntelligencePipeline.zip) {
+    @Intro(title: "Running the Pipeline") {
+        Run the four stages in order from one view model, show each stage's status as it happens, and choose the input. Then step back and compare the whole pipeline with what a single on-device `LanguageModelSession` does.
+
+        @Image(source: "ip-preview-done.png", alt: "All four stages done and the final response.")
+    }
+
+    @Section(title: "Orchestrate the Stages") {
+        @ContentAndMedia {
+            `PipelineViewModel` owns the services and runs them one after another. Each stage sets its status before and after, so the screen animates through the pipeline.
+
+            @Image(source: "ip-preview-running.png", alt: "Record done, Transcribe running, the rest waiting.")
+        }
+
+        @Steps {
+            @Step {
+                Create `PipelineViewModel.swift` with the input sources and `run(audioURL:recordLabel:)`. Typed text skips transcription. If speech recognition fails on the **sample**, the known text is used and the stage says so honestly, so a demo never dead-ends. A failure anywhere else stops the pipeline with that stage's error.
+
+                @Code(name: "PipelineViewModel.swift", file: ip-05-vm-01.swift)
+            }
+
+            @Step {
+                Add recording. `startRecording()` asks for the microphone, starts the recorder and forwards its level and length to the screen. `stopRecordingAndRun()` rejects anything under half a second as empty, then runs the pipeline on the file.
+
+                @Code(name: "PipelineViewModel.swift", file: ip-05-vm-02.swift)
+            }
+        }
+    }
+
+    @Section(title: "Show the Pipeline") {
+        @ContentAndMedia {
+            One row per stage, joined by connectors that turn green as stages complete, then a Run button and the final response.
+
+            @Image(source: "ip-preview-done.png", alt: "All four stages done and the final response.")
+        }
+
+        @Steps {
+            @Step {
+                Create `PipelineStageView.swift`. The icon's colour, the status badge and the output text all come from the stage's `StageStatus`. Output and errors are selectable, so you can copy an error message.
+
+                @Code(name: "PipelineStageView.swift", file: ip-05-row.swift) {
+                    @Image(source: "ip-preview-stages.png", alt: "Stage rows that are done, failed and waiting.")
+                }
+            }
+
+            @Step {
+                Replace `ContentView.swift` with the stages, the Run button and the final response. The button's title and colour follow the pipeline's state.
+
+                @Code(name: "ContentView.swift", file: ip-05-screen-01.swift) {
+                    @Image(source: "ip-preview-idle.png", alt: "Four waiting stages and the Run Pipeline button.")
+                }
+            }
+
+            @Step {
+                Add the input card: a segmented picker for Sample, Record and Type. While recording, a red bar follows the microphone level, with a seconds counter.
+
+                @Code(name: "ContentView.swift", file: ip-05-screen-02.swift) {
+                    @Image(source: "ip-preview-recording.png", alt: "Recording, with a red level bar and a seconds counter.")
+                }
+            }
+
+            @Step {
+                Add the Settings button. Its gear fills in when an API key is saved, so you can tell at a glance whether the cloud stage will be live.
+
+                @Code(name: "ContentView.swift", file: ip-05-screen-03.swift) {
+                    @Image(source: "ip-preview-live.png", alt: "A live answer from a cloud provider.")
+                }
+            }
+        }
+    }
+
+    @Section(title: "Then and Now") {
+        @ContentAndMedia {
+            Run it and count the moving parts: four frameworks, three permissions, a hand-written router, three request formats, an API key and a network connection. With Foundation Models, one on-device session understands the request and returns typed output, and nothing leaves the device. That's what the rest of the course builds.
+
+            @Image(source: "ip-diagram-compare.png", alt: "This pipeline compared with Foundation Models.")
+        }
+
+        @Steps {
+            @Step {
+                Check that the app file shows `ContentView`, then run on an iPhone. Try **Sample**, record a question, and type "Turn on the living room lights" to watch the cloud stage be skipped.
+
+                @Code(name: "IntelligencePipelineApp.swift", file: ip-05-app.swift) {
+                    @Image(source: "ip-preview-done.png", alt: "All four stages done and the final response.")
+                }
+            }
+        }
+    }
+
+    @Assessments {
+        @MultipleChoice {
+            Speech recognition fails while running the **Sample** input. What does the pipeline do?
+
+            @Choice(isCorrect: true) {
+                Continues with the known sample text and says so in the Transcribe stage.
+
+                @Justification(reaction: "That's right!") {
+                    The app knows what it spoke, so the demo can carry on honestly.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Stops with an error, as it does for recordings.
+
+                @Justification(reaction: "Try again!") {
+                    Only recordings and typed input stop on failure.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Sends the audio to the cloud model instead.
+
+                @Justification(reaction: "Not quite.") {
+                    The cloud stage only ever receives text.
+                }
+            }
+        }
+
+        @MultipleChoice {
+            Which stages would a single on-device `LanguageModelSession` replace?
+
+            @Choice(isCorrect: true) {
+                The intent router and the cloud LLM call.
+
+                @Justification(reaction: "Correct!") {
+                    The model understands the request and answers it, with typed output and no network.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                Recording and speech recognition.
+
+                @Justification(reaction: "Try again!") {
+                    Audio capture and speech-to-text are still needed for voice input.
+                }
+            }
+
+            @Choice(isCorrect: false) {
+                All four stages.
+
+                @Justification(reaction: "Not quite.") {
+                    A language model works with text; the audio stages remain.
+                }
+            }
+        }
+    }
+}
