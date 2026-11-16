@@ -2,6 +2,8 @@
     @Intro(title: "Build a Voice AI Pipeline the Classic Way") {
         Before on-device language models, a voice feature meant chaining separate frameworks: record audio, turn it into text, guess the intent, then send the question to a cloud model. Build that pipeline stage by stage, and see exactly what Apple Intelligence makes simpler.
 
+        New to some of the Swift? Keep the <doc:Swift-Code-Guide> open as you go: it explains every keyword and attribute these tutorials use, such as `ObservableObject`, `@Published`, `@MainActor`, `async`/`await` and `[weak self]`.
+
         @Image(source: "ip-hero.png", alt: "The pipeline recording a question and showing its four completed stages.")
     }
 

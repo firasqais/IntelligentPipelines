@@ -98,6 +98,7 @@ scroll, app previews, diagrams, quizzes and a project download, in the style of 
 | `Tutorial/Preview Tutorial.command` | Double-click to serve the DocC tutorial from your Mac |
 | `Tutorial/Export Tutorial.command` | Double-click to make a `.doccarchive` that opens in Xcode |
 | `Tutorial/IntelligencePipeline.docc` | The DocC source |
+| [`Swift-Code-Guide.md`](Swift-Code-Guide.md) | Every Swift keyword and attribute the tutorials use, explained with this app's own code. Also a page in the tutorial |
 
 | Chapter | Tutorial | Builds |
 |---|---|---|

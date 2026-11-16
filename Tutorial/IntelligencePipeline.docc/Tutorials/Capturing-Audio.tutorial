@@ -2,6 +2,8 @@
     @Intro(title: "Capturing Audio") {
         Every voice feature starts with an audio file. Describe the pipeline's four stages, then create audio two ways: by speaking a sample question with text-to-speech, and by recording the microphone.
 
+        Meet a keyword you don't know? Look it up in the <doc:Swift-Code-Guide>.
+
         @Image(source: "ip-diagram-pipeline.png", alt: "Audio, speech, intent and LLM stages, on the device and in the cloud.")
     }
 
